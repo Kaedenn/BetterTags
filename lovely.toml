@@ -41,10 +41,9 @@ count = 2
 [patches.pattern]
 target = "tag.lua"
 pattern = "self.HUD_tag:remove()"
-position = "at"
-payload = ''''''
+position = "after"
+payload = '''generateTagUi()'''
 match_indent = true
-count = 2
 
 [[patches]]
 [patches.pattern]
