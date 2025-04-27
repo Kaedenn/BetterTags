@@ -1,3 +1,5 @@
+
+
 function getTagCounts()
     local result = {}
 
@@ -32,17 +34,10 @@ function generateTagUi()
                     align = G.HUD_tags[1] and 'tm' or 'bri',
                     offset = G.HUD_tags[1] and {x=0,y=0} or {x=1.3,y=0},
                     major = G.HUD_tags[1] and G.HUD_tags[#G.HUD_tags] or G.ROOM_ATTACH
-                }
+                },
             }
-            done[tag.key] = true
+            done[tag.key] = G.HUD_tags[#G.HUD_tags]
         end
-        
+        G.GAME.tags[k].HUD_tag = done[tag.key]
     end
 end 
-
-
-function getFakeHUDTag(tag) 
-    return {
-        states = {visible = false} -- This specifically fixes Cartomancer
-    }
-end
