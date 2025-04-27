@@ -78,6 +78,7 @@ target = "functions/UI_definitions.lua"
 pattern = ''' _tag.HUD_tag = G.HUD_tags[#G.HUD_tags]'''
 position = "at"
 payload = '''generateTagUi()
+_tag.HUD_tag = getFakeHUDTag(_tag)
 '''
 match_indent = true
 

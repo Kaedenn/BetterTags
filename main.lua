@@ -39,3 +39,10 @@ function generateTagUi()
         
     end
 end 
+
+
+function getFakeHUDTag(tag) 
+    return {
+        states = {visible = false} -- This specifically fixes Cartomancer
+    }
+end
