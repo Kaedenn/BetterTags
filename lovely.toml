@@ -89,55 +89,10 @@ position = "before"
 payload = '''generateTagUi()'''
 match_indent = false
 
-# [[patches]]
-# [patches.pattern]
-# target = "tag.lua" # Tag:Nope
-# pattern = '''G.E_MANAGER:add_event(Event({
-#         trigger = 'after',
-#         delay = 0.5,
-#         func = (function()
-#             self:remove()
-#             return true
-#         end)
-#     }))'''
-# position = "at"
-# payload = '''
-#     if self.count <= 1 then
-#         G.E_MANAGER:add_event(Event({
-#             trigger = 'after',
-#             delay = 0.5,
-#             func = (function()
-#                 self:remove()
-#                 return true
-#             end)
-#         }))
-#     else
-#         self.count = self.count - 1
-#         self.triggered = false
-#     end
-# '''
-# match_indent = false
-
-# [[patches]]
-# [patches.pattern]
-# target = "tag.lua"
-# pattern = '''{n=G.UIT.O, config={w=_size*1,h=_size*1, colour = G.C.BLUE, object = tag_sprite, focus_with_object = true}},'''
-# position = "after"
-# payload = '''{n=G.UIT.O, config={colour = G.C.BLUE, object = DynaText({
-#                         string = {
-#                             { string = 'x', colour = G.C.JOKER_GREY }, { string = (self.config or 1) , colour = G.C.RED }, },
-#                         colours = { G.C.UI.TEXT_DARK },
-#                     }), focus_with_object = true}},'''
-# match_indent = true
-
-# [[patches]]
-# [patches.pattern]
-# target = "functions/UI_definitions.lua"
-# pattern = '''tag_sprite_ui'''
-# position = "before"
-# payload = '''{n=G.UIT.O, config={align = "tl",colour = G.C.BLUE, object = DynaText({
-#         string = {
-#             { string = 'x', colour = G.C.JOKER_GREY }, { string = (G.GAME.tags[#G.GAME.tags].count or 1) , colour = G.C.RED }, },
-#         colours = { G.C.UI.TEXT_DARK },
-#     }), focus_with_object = true}},'''
-# match_indent = true
+[[patches]]
+[patches.copy]
+target = "main.lua"
+position = "append"
+sources = [
+    "main.lua",
+]
