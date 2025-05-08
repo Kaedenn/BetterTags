@@ -36,12 +36,20 @@ function generateTagUi()
                     major = G.HUD_tags[1] and G.HUD_tags[#G.HUD_tags] or G.ROOM_ATTACH
                 },
             }
+            if Handy then
+                local _handy_tag_click_target = tag.tag_sprite
+                local _handy_tag_click_ref = _handy_tag_click_target.click
+                _handy_tag_click_target.click = function(...)
+                    if Handy.controller.process_tag_click(tag) then return end
+                    return _handy_tag_click_ref(...)
+                end
+            end
             done[tag.key] = {
                 HUD_tag = G.HUD_tags[#G.HUD_tags],
                 tag = tag
             }
         end
-        G.GAME.tags[k].HUD_tag = done[tag.key].HUD_tag
+        tag.HUD_tag = done[tag.key].HUD_tag
     end
     -- Cryptid Cat Tag. 
     local cat_ref = done["tag_cry_cat"]
