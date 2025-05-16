@@ -1,3 +1,3 @@
 return {
-	ui_position = 1,
+	ui_location = 1,
 }

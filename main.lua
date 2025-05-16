@@ -1,6 +1,5 @@
-local config = nil
-
-if SMODS then 
+local config = SMODS and SMODS.Mods.bettertags.config or nil
+if SMODS and SMODS.current_mod then 
     config = SMODS.current_mod.config
     SMODS.current_mod.config_tab = function()
         return {n = G.UIT.ROOT, config = {
@@ -18,11 +17,20 @@ if SMODS then
                     scale = 1,
                     ref_table = config,
                     ref_value = "ui_location",
-                    opt_callback = 'cycle_options',
+                    opt_callback = 'config_change',
                 }
             }}
         }}
     end
+end
+
+G.FUNCS.config_change = function(args) 
+    -- G.FUNCS.cycle_options from CardSleeves which in turn is G.FUNCS.cycle_update from Galdur
+    args = args or {}
+    if args.cycle_config and args.cycle_config.ref_table and args.cycle_config.ref_value then
+        args.cycle_config.ref_table[args.cycle_config.ref_value] = args.to_key
+    end
+    generateTagUi()
 end
 
 function getTagCounts()
@@ -43,21 +51,25 @@ function generateTagUi()
     end
     local counts = getTagCounts()
     local done = {}
+
+    local right_sided = config.ui_location == 2
+    local padding = right_sided and 0.05 or 0.1
+
     for k, tag in pairs(G.GAME.tags) do
         if not done[tag.key] then
             local tag_sprite_ui = tag:generate_UI()
             tag.count = counts[tag.key]
             G.HUD_tags[#G.HUD_tags+1] = UIBox{
                 definition = {n=G.UIT.ROOT, config={align = "cm",padding = 0.05, colour = G.C.CLEAR}, nodes={
-                    {n= G.UIT.C, config={align = "cm", padding=.05}, nodes={   
-                        {n = G.UIT.T, config = {text = 'x', scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
-                        {n = G.UIT.T, config = {text = tag.count, scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
+                    config.ui_location == 2 and tag_sprite_ui or nil,
+                    {n= G.UIT.C, config={align = "cm", padding=padding}, nodes={   
+                        {n = G.UIT.T, config = {text = 'x'..tag.count, scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
                     }},
-                    tag_sprite_ui,
+                    config.ui_location == 1 and tag_sprite_ui or nil,
                 }},
                 config = {
                     align = G.HUD_tags[1] and 'tm' or 'bri',
-                    offset = G.HUD_tags[1] and {x=0,y=0} or {x=1.3,y=0},
+                    offset = G.HUD_tags[1] and {x=0,y=0} or {x=1,y=0},
                     major = G.HUD_tags[1] and G.HUD_tags[#G.HUD_tags] or G.ROOM_ATTACH
                 },
             }
@@ -123,7 +135,6 @@ function generateTagUi()
                 func = (function()
                     cat_tag:juice_up(0.25, 0.1)
                     cat_tag.ability.edshader = edition.shader
-                    print(edition.sound)
                     play_sound(edition.sound.sound, (edition.sound.per or 1)*1.3, (edition.sound.vol or 0.25)*0.6)
                     generateTagUi()
                     return true
