@@ -1,23 +1,26 @@
-local config =  nil
+BetterTags = BetterTags or {}
+BetterTags.config = nil
+BetterTags.tag_count = nil
+
 if SMODS and SMODS.current_mod then 
-    config = SMODS.current_mod.config
+    BetterTags.config = SMODS.current_mod.config
     local has_cryptid = SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load
     SMODS.current_mod.config_tab = function()
         return {n = G.UIT.ROOT, config = {
             r = .2, colour = G.C.BLACK
         }, nodes = {
             {n = G.UIT.C, config = { padding = .5,}, nodes = {
-                has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
+                has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = BetterTags.config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
                 create_option_cycle{
                     label = "UI Anchor",
                     info = {"Where in the Tags UI,", "the counter is displayed."},
                     options = {'Left', "Right"},
-                    current_option = config.ui_location,
+                    current_option = BetterTags.config.ui_location,
                     colour = G.C.BOOSTER,
                     w = 5,
                     text_scale = 0.5,
                     scale = 1,
-                    ref_table = config,
+                    ref_table = BetterTags.config,
                     ref_value = "ui_location",
                     opt_callback = 'config_change',
                 }
@@ -25,11 +28,6 @@ if SMODS and SMODS.current_mod then
         }}
     end
     if not has_cryptid then config.auto_merge_cat_tags = false end
-else
-    config = { -- Defaults. Dunno if this is the right way, dont care.
-        ui_location = 1,
-        auto_merge_cat_tags = false
-    }
 end
 
 G.FUNCS.config_change = function(args) 
@@ -60,25 +58,24 @@ function generateTagUi()
     local counts = getTagCounts()
     local done = {}
 
-    local right_sided = config.ui_location == 2
+    local right_sided = BetterTags.config.ui_location == 2
     local padding = right_sided and 0.05 or 0.1
-
     for k, tag in pairs(G.GAME.tags) do
         if not done[tag.key] then
             local tag_sprite_ui = tag:generate_UI()
             tag.count = counts[tag.key]
             
-            if tag.key == "tag_cry_cat" and config.auto_merge_cat_tags then
+            if tag.key == "tag_cry_cat" and BetterTags.config.auto_merge_cat_tags then
                 tag.cat_count = tag.cat_count or 1
                 tag.count = tag.cat_count
             end
             G.HUD_tags[#G.HUD_tags+1] = UIBox{
                 definition = {n=G.UIT.ROOT, config={align = "cm",padding = 0.05, colour = G.C.CLEAR}, nodes={
-                    config.ui_location == 2 and tag_sprite_ui or nil,
+                    BetterTags.config.ui_location == 2 and tag_sprite_ui or nil,
                     {n= G.UIT.C, config={align = "cm", padding=padding}, nodes={   
                         {n = G.UIT.T, config = {text = 'x'..tag.count, scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
                     }},
-                    config.ui_location == 1 and tag_sprite_ui or nil,
+                    BetterTags.config.ui_location == 1 and tag_sprite_ui or nil,
                 }},
                 config = {
                     align = G.HUD_tags[1] and 'tm' or 'bri',
@@ -99,14 +96,20 @@ function generateTagUi()
                 tag = tag
             }
         else
-            if tag.key == "tag_cry_cat" and config.auto_merge_cat_tags then
+            if tag.key == "tag_cry_cat" and BetterTags.config.auto_merge_cat_tags then
                 done["tag_cry_cat"].tag.cat_count = (done["tag_cry_cat"].tag.cat_count or 0) + 1
                 tag.HUD_tag = done[tag.key].HUD_tag
                 tag:remove()
             end
         end
+        
         tag.HUD_tag = done[tag.key].HUD_tag
     end
+    BetterTags.tag_count = 0
+    for k, tag in pairs(done) do
+        BetterTags.tag_count = BetterTags.tag_count + tag.tag.count
+    end
+
     -- Cryptid Cat Tag. 
     local cat_ref = done["tag_cry_cat"]
     if cat_ref and cat_ref.tag then
