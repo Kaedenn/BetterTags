@@ -1,11 +1,13 @@
-local config = SMODS and SMODS.Mods.bettertags.config or nil
+local config =  nil
 if SMODS and SMODS.current_mod then 
     config = SMODS.current_mod.config
+    local has_cryptid = SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load
     SMODS.current_mod.config_tab = function()
         return {n = G.UIT.ROOT, config = {
             r = .2, colour = G.C.BLACK
         }, nodes = {
             {n = G.UIT.C, config = { padding = .5,}, nodes = {
+                has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
                 create_option_cycle{
                     label = "UI Anchor",
                     info = {"Where in the Tags UI,", "the counter is displayed."},
@@ -22,6 +24,12 @@ if SMODS and SMODS.current_mod then
             }}
         }}
     end
+    if not has_cryptid then config.auto_merge_cat_tags = false end
+else
+    config = { -- Defaults. Dunno if this is the right way, dont care.
+        ui_location = 1,
+        auto_merge_cat_tags = false
+    }
 end
 
 G.FUNCS.config_change = function(args) 
@@ -60,7 +68,7 @@ function generateTagUi()
             local tag_sprite_ui = tag:generate_UI()
             tag.count = counts[tag.key]
             
-            if tag.key == "tag_cry_cat" then
+            if tag.key == "tag_cry_cat" and config.auto_merge_cat_tags then
                 tag.cat_count = tag.cat_count or 1
                 tag.count = tag.cat_count
             end
@@ -91,7 +99,7 @@ function generateTagUi()
                 tag = tag
             }
         else
-            if tag.key == "tag_cry_cat" then
+            if tag.key == "tag_cry_cat" and config.auto_merge_cat_tags then
                 done["tag_cry_cat"].tag.cat_count = (done["tag_cry_cat"].tag.cat_count or 0) + 1
                 tag.HUD_tag = done[tag.key].HUD_tag
                 tag:remove()
@@ -103,8 +111,10 @@ function generateTagUi()
     local cat_ref = done["tag_cry_cat"]
     if cat_ref and cat_ref.tag then
         local cat_tag = cat_ref.tag
-        local logvalue = math.log(cat_tag.cat_count,2)+1
-        cat_tag.count = cat_tag.cat_count
+
+        local count = cat_tag.cat_count or cat_tag.count
+        local logvalue = math.log(count,2)+1
+        cat_tag.count = count
 
         if (logvalue == math.floor(logvalue)) and not (cat_tag.ability.level == logvalue) and not (logvalue == 1) then
             cat_tag.ability.level = logvalue
