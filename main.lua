@@ -59,6 +59,11 @@ function generateTagUi()
         if not done[tag.key] then
             local tag_sprite_ui = tag:generate_UI()
             tag.count = counts[tag.key]
+            
+            if tag.key == "tag_cry_cat" then
+                tag.cat_count = tag.cat_count or 1
+                tag.count = tag.cat_count
+            end
             G.HUD_tags[#G.HUD_tags+1] = UIBox{
                 definition = {n=G.UIT.ROOT, config={align = "cm",padding = 0.05, colour = G.C.CLEAR}, nodes={
                     config.ui_location == 2 and tag_sprite_ui or nil,
@@ -85,6 +90,12 @@ function generateTagUi()
                 HUD_tag = G.HUD_tags[#G.HUD_tags],
                 tag = tag
             }
+        else
+            if tag.key == "tag_cry_cat" then
+                done["tag_cry_cat"].tag.cat_count = (done["tag_cry_cat"].tag.cat_count or 0) + 1
+                tag.HUD_tag = done[tag.key].HUD_tag
+                tag:remove()
+            end
         end
         tag.HUD_tag = done[tag.key].HUD_tag
     end
@@ -92,54 +103,62 @@ function generateTagUi()
     local cat_ref = done["tag_cry_cat"]
     if cat_ref and cat_ref.tag then
         local cat_tag = cat_ref.tag
-        local logvalue = math.log(cat_tag.count,2)+1
+        local logvalue = math.log(cat_tag.cat_count,2)+1
+        cat_tag.count = cat_tag.cat_count
+
         if (logvalue == math.floor(logvalue)) and not (cat_tag.ability.level == logvalue) and not (logvalue == 1) then
             cat_tag.ability.level = logvalue
-            local perc = (cat_tag.ability.level + 1)/10
-            if perc > 1 then perc = 1 end
-
-            local edition = G.P_CENTER_POOLS.Edition[1]
-            local j = 1
-            while j < cat_tag.ability.level + 1 do
-                for i = 2, #G.P_CENTER_POOLS.Edition do
-                    j = j + 1
-                    if j >= cat_tag.ability.level + 1 then
-                        edition = G.P_CENTER_POOLS.Edition[i]
-                        break
-                    end
-                end
-            end
-
-            G.E_MANAGER:add_event(Event({
-                delay = 0.0,
-                trigger = 'immediate',
-                func = (function()
-                    attention_text({
-                        text = ""..cat_tag.ability.level,
-                        colour = G.C.WHITE,
-                        scale = 1,
-                        hold = 0.3/G.SETTINGS.GAMESPEED,
-                        cover = cat_tag.HUD_tag,
-                        cover_colour = G.C.DARK_EDITION,
-                        align = 'cm',
-                    })
-                    play_sound('generic1', 0.8 + perc/2, 0.6)
-                    play_sound('multhit1', 0.9 + perc/2, 0.4)
-                    return true
-                end)
-            }))
-
-            G.E_MANAGER:add_event(Event({
-                trigger = 'after',
-                delay = 0.2,
-                func = (function()
-                    cat_tag:juice_up(0.25, 0.1)
-                    cat_tag.ability.edshader = edition.shader
-                    play_sound(edition.sound.sound, (edition.sound.per or 1)*1.3, (edition.sound.vol or 0.25)*0.6)
-                    generateTagUi()
-                    return true
-                end)
-            }))
+            upgradeCatTag(cat_tag)
         end
     end
 end 
+
+function upgradeCatTag(cat_tag, new_tag) 
+    local perc = (cat_tag.ability.level + 1)/10
+    if perc > 1 then perc = 1 end
+
+    local edition = G.P_CENTER_POOLS.Edition[1]
+    local j = 1
+    while j < cat_tag.ability.level + 1 do
+        for i = 2, #G.P_CENTER_POOLS.Edition do
+            j = j + 1
+            if j >= cat_tag.ability.level + 1 then
+                edition = G.P_CENTER_POOLS.Edition[i]
+                break
+            end
+        end
+    end
+
+    G.E_MANAGER:add_event(Event({
+        delay = 0.0,
+        trigger = 'immediate',
+        func = (function()
+            attention_text({
+                text = ""..cat_tag.ability.level,
+                colour = G.C.WHITE,
+                scale = 1,
+                hold = 0.3/G.SETTINGS.GAMESPEED,
+                cover = cat_tag.HUD_tag,
+                cover_colour = G.C.DARK_EDITION,
+                align = 'cm',
+            })
+            play_sound('generic1', 0.8 + perc/2, 0.6)
+            play_sound('multhit1', 0.9 + perc/2, 0.4)
+            return true
+        end)
+    }))
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.2,
+        func = (function()
+            cat_tag:juice_up(0.25, 0.1)
+            cat_tag.ability.edshader = edition.shader
+            play_sound(edition.sound.sound, (edition.sound.per or 1)*1.3, (edition.sound.vol or 0.25)*0.6)
+            generateTagUi()
+            return true
+        end)
+    }))
+end
+
+-- watch lua Mods/BetterTags/main.lua
