@@ -1,4 +1,29 @@
+local config = nil
 
+if SMODS then 
+    config = SMODS.current_mod.config
+    SMODS.current_mod.config_tab = function()
+        return {n = G.UIT.ROOT, config = {
+            r = .2, colour = G.C.BLACK
+        }, nodes = {
+            {n = G.UIT.C, config = { padding = .5,}, nodes = {
+                create_option_cycle{
+                    label = "UI Anchor",
+                    info = {"Where in the Tags UI,", "the counter is displayed."},
+                    options = {'Left', "Right"},
+                    current_option = config.ui_location,
+                    colour = G.C.BOOSTER,
+                    w = 5,
+                    text_scale = 0.5,
+                    scale = 1,
+                    ref_table = config,
+                    ref_value = "ui_location",
+                    opt_callback = 'cycle_options',
+                }
+            }}
+        }}
+    end
+end
 
 function getTagCounts()
     local result = {}
@@ -24,11 +49,11 @@ function generateTagUi()
             tag.count = counts[tag.key]
             G.HUD_tags[#G.HUD_tags+1] = UIBox{
                 definition = {n=G.UIT.ROOT, config={align = "cm",padding = 0.05, colour = G.C.CLEAR}, nodes={
-                    tag_sprite_ui,
-                    {n= G.UIT.C, config={align = "cm"}, nodes={   
+                    {n= G.UIT.C, config={align = "cm", padding=.05}, nodes={   
                         {n = G.UIT.T, config = {text = 'x', scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
                         {n = G.UIT.T, config = {text = tag.count, scale = 0.4, colour = G.C.UI.TEXT_LIGHT}},
-                    }}
+                    }},
+                    tag_sprite_ui,
                 }},
                 config = {
                     align = G.HUD_tags[1] and 'tm' or 'bri',
