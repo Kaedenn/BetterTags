@@ -88,11 +88,3 @@ pattern = '''G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)'''
 position = "before"
 payload = '''generateTagUi()'''
 match_indent = false
-
-[[patches]]
-[patches.copy]
-target = "main.lua"
-position = "append"
-sources = [
-    "main.lua",
-]

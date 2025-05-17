@@ -1,34 +1,31 @@
 BetterTags = BetterTags or {}
-BetterTags.config = nil
 BetterTags.tag_count = nil
 
-if SMODS and SMODS.current_mod then 
-    BetterTags.config = SMODS.current_mod.config
-    local has_cryptid = SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load
-    SMODS.current_mod.config_tab = function()
-        return {n = G.UIT.ROOT, config = {
-            r = .2, colour = G.C.BLACK
-        }, nodes = {
-            {n = G.UIT.C, config = { padding = .5,}, nodes = {
-                has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = BetterTags.config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
-                create_option_cycle{
-                    label = "UI Anchor",
-                    info = {"Where in the Tags UI,", "the counter is displayed."},
-                    options = {'Left', "Right"},
-                    current_option = BetterTags.config.ui_location,
-                    colour = G.C.BOOSTER,
-                    w = 5,
-                    text_scale = 0.5,
-                    scale = 1,
-                    ref_table = BetterTags.config,
-                    ref_value = "ui_location",
-                    opt_callback = 'config_change',
-                }
-            }}
+BetterTags.config = SMODS.current_mod.config
+local has_cryptid = SMODS.Mods["Cryptid"] and SMODS.Mods["Cryptid"].can_load
+SMODS.current_mod.config_tab = function()
+    return {n = G.UIT.ROOT, config = {
+        r = .2, colour = G.C.BLACK
+    }, nodes = {
+        {n = G.UIT.C, config = { padding = .5,}, nodes = {
+            has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = BetterTags.config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
+            create_option_cycle{
+                label = "UI Anchor",
+                info = {"Where in the Tags UI,", "the counter is displayed."},
+                options = {'Left', "Right"},
+                current_option = BetterTags.config.ui_location,
+                colour = G.C.BOOSTER,
+                w = 5,
+                text_scale = 0.5,
+                scale = 1,
+                ref_table = BetterTags.config,
+                ref_value = "ui_location",
+                opt_callback = 'config_change',
+            }
         }}
-    end
-    if not has_cryptid then config.auto_merge_cat_tags = false end
+    }}
 end
+if not has_cryptid then BetterTags.config.auto_merge_cat_tags = false end
 
 G.FUNCS.config_change = function(args) 
     -- G.FUNCS.cycle_options from CardSleeves which in turn is G.FUNCS.cycle_update from Galdur
