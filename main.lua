@@ -8,7 +8,13 @@ SMODS.current_mod.config_tab = function()
         r = .2, colour = G.C.BLACK
     }, nodes = {
         {n = G.UIT.C, config = { padding = .5,}, nodes = {
-            has_cryptid and create_toggle({label = "Auto-Merge Cat-Tags", ref_table = BetterTags.config, ref_value = 'auto_merge_cat_tags', info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"}, active_colour = G.C.RED}) or nil,
+            has_cryptid and create_toggle({
+                label = "Auto-Merge Cat-Tags",
+                ref_table = BetterTags.config,
+                ref_value = 'auto_merge_cat_tags',
+                info = {"May be buggy!", "Jokers that count tags", "will *not* count cat tags anymore.", "USE ONLY ON NEW PROFILES!"},
+                active_colour = G.C.RED
+            }) or nil,
             create_option_cycle{
                 label = "UI Anchor",
                 info = {"Where in the Tags UI,", "the counter is displayed."},
@@ -36,11 +42,18 @@ G.FUNCS.config_change = function(args)
     generateTagUi()
 end
 
+function getTagKey(tag)
+    if tag.key == "tag_cry_cat" then
+        return ("tag_cry_cat-%d"):format(tag.ability and tag.ability.level or 1)
+    end
+    return tag.key
+end
+
 function getTagCounts()
     local result = {}
 
     for _, tag in pairs(G.GAME.tags) do
-        result[tag.key] = (result[tag.key] or 0) + 1
+        result[getTagKey(tag)] = (result[getTagKey(tag)] or 0) + 1
     end
     return result
 end 
@@ -58,14 +71,10 @@ function generateTagUi()
     local right_sided = BetterTags.config.ui_location == 2
     local padding = right_sided and 0.05 or 0.1
     for k, tag in pairs(G.GAME.tags) do
-        if not done[tag.key] then
+        if not done[getTagKey(tag)] then
             local tag_sprite_ui = tag:generate_UI()
-            tag.count = counts[tag.key]
+            tag.count = counts[getTagKey(tag)]
             
-            if tag.key == "tag_cry_cat" and BetterTags.config.auto_merge_cat_tags then
-                tag.cat_count = tag.cat_count or 1
-                tag.count = tag.cat_count
-            end
             G.HUD_tags[#G.HUD_tags+1] = UIBox{
                 definition = {n=G.UIT.ROOT, config={align = "cm",padding = 0.05, colour = G.C.CLEAR}, nodes={
                     BetterTags.config.ui_location == 2 and tag_sprite_ui or nil,
@@ -88,19 +97,13 @@ function generateTagUi()
                     return _handy_tag_click_ref(...)
                 end
             end
-            done[tag.key] = {
+            done[getTagKey(tag)] = {
                 HUD_tag = G.HUD_tags[#G.HUD_tags],
                 tag = tag
             }
-        else
-            if tag.key == "tag_cry_cat" and BetterTags.config.auto_merge_cat_tags then
-                done["tag_cry_cat"].tag.cat_count = (done["tag_cry_cat"].tag.cat_count or 0) + 1
-                tag.HUD_tag = done[tag.key].HUD_tag
-                tag:remove()
-            end
         end
         
-        tag.HUD_tag = done[tag.key].HUD_tag
+        tag.HUD_tag = done[getTagKey(tag)].HUD_tag
     end
     BetterTags.tag_count = 0
     for k, tag in pairs(done) do
